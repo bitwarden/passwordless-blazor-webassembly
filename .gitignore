@@ -396,3 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+.idea
+
+# Passwordless.BlazorWebAssembly
+src/Passwordless.BlazorWebAssembly/wwwroot/js/**.js
+src/Passwordless.BlazorWebAssembly/wwwroot/js/**.js.map

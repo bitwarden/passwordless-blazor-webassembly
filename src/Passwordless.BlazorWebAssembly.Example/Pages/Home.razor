@@ -1,0 +1,41 @@
+﻿@page "/"
+@using Passwordless.BlazorWebAssembly.Abstractions
+@using Passwordless.BlazorWebAssembly.Example.Services.DemoBackend
+
+@inject IDemoBackendClient BackendClient;
+@inject IPasswordlessClient WebAuthnClient;
+
+<PageTitle>Home</PageTitle>
+
+<div class="container">
+    <div class="row g-4">
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-2">Register</h5>
+                    <EditForm FormName="@RegisterFormName" Model="@RegisterViewModel" OnValidSubmit="OnRegistrationAsync">
+                        <DataAnnotationsValidator />
+                        <InputText class="form-control mb-2" DisplayName="Username" @bind-Value="RegisterViewModel.Username" placeholder="Username"/>
+                        <ValidationMessage class="mb-2 validation-message" For="@(() => RegisterViewModel.Username)" />
+                        <InputText class="form-control mb-2" DisplayName="Alias" @bind-Value="RegisterViewModel.Alias" placeholder="Alias (optional)"/>
+                        <ValidationMessage class="mb-2 validation-message" For="@(() => RegisterViewModel.Alias)" />
+                        <button class="btn btn-primary" type="submit">Register</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-2">Login</h5>
+                    <EditForm FormName="@LoginFormName" Model="@LoginViewModel" OnValidSubmit="OnSignInAsync">
+                        <DataAnnotationsValidator />
+                        <InputText class="form-control mb-2" DisplayName="Alias" @bind-Value="LoginViewModel.Alias" placeholder="Alias (optional)"/>
+                        <ValidationMessage class="mb-2 validation-message" For="@(() => LoginViewModel.Alias)"/>
+                        <button class="btn btn-primary" type="submit">Sign In</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
