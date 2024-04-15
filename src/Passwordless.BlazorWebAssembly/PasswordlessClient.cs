@@ -25,7 +25,6 @@ public sealed class PasswordlessClient : IPasswordlessClient
 
     public async Task<RegisterCompleteResponse> RegisterAsync(string token, string nickname)
     {
-        await _webAuthn.InitializeAsync();
         var beginRequest = new RegisterBeginRequest
         {
             Token = token,
@@ -48,7 +47,6 @@ public sealed class PasswordlessClient : IPasswordlessClient
 
     public async Task<LoginCompleteResponse> LoginAsync(string? alias)
     {
-        await _webAuthn.InitializeAsync();
         var beginRequest = new LoginBeginRequest
         {
             Alias = alias,

@@ -9,5 +9,8 @@ public sealed class RegisterCompleteRequest : BaseApiRequest
 
     public AuthenticatorAttestationRawResponse Response { get; set; }
 
+    /// <summary>
+    /// The credential's nickname.
+    /// </summary>
     public string Nickname { get; set; }
 }
