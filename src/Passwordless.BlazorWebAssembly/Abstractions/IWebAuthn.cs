@@ -6,12 +6,6 @@ namespace Passwordless.BlazorWebAssembly.Abstractions;
 public interface IWebAuthn
 {
     /// <summary>
-    /// Wait for this to make sure this module is initialized.
-    /// </summary>
-    /// <returns></returns>
-    Task InitializeAsync();
-
-    /// <summary>
     /// Whether or not this browser supports WebAuthn.
     /// </summary>
     /// <returns></returns>
