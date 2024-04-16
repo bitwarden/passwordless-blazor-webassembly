@@ -71,7 +71,7 @@ private async Task OnRegistrationAsync()
     if (RegisterViewModel?.Username == null) return;
     
     // 1. Call your backend to obtain the `register_` token.
-    var registrationToken = await BackendClient.RegisterAsync(new RegisterRequest(RegisterViewModel.Username, RegisterViewModel.Alias));
+    var registrationToken = await PasswordlessClient.RegisterAsync(new RegisterRequest(RegisterViewModel.Username, RegisterViewModel.Alias));
     
     // 2. Call the Passwordless client to create and store the credentials.
     var token = await WebAuthnClient.RegisterAsync(registrationToken.Token, RegisterViewModel.Alias!);
@@ -112,8 +112,11 @@ public LoginViewModel LoginViewModel { get; set; } = new();
 
 private async Task OnSignInAsync()
 {
-    var token = await WebAuthnClient.LoginAsync(LoginViewModel.Alias!);
+    // 1. Call Passwordless.dev to initiate the login process.
+    var token = await PasswordlessClient.LoginAsync(LoginViewModel.Alias!);
 
+    // 2. Once a valid credential is selected, call your backend to authenticate the user.
+    // `backendResponse` can contain a JWT token or any other authentication information.
     var backendRequest = new SignInRequest(token.Token);
     var backendResponse = await BackendClient.SignInAsync(backendRequest);
 }
