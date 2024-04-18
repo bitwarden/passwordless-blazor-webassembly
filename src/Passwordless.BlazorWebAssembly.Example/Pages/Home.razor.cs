@@ -19,6 +19,17 @@ public partial class Home : ComponentBase
     [SupplyParameterFromForm(FormName = RegisterFormName)]
     public RegisterViewModel RegisterViewModel { get; set; } = new();
 
+    public bool? IsSupported { get; private set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!IsSupported.HasValue)
+        {
+            IsSupported = await WebAuthnClient.IsSupportedAsync();
+            StateHasChanged();
+        }
+    }
+
     private async Task OnSignInAsync()
     {
         var token = await WebAuthnClient.LoginAsync(LoginViewModel.Alias!);

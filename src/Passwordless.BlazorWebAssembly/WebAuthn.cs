@@ -11,10 +11,10 @@ namespace Passwordless.BlazorWebAssembly;
 public class WebAuthn : IWebAuthn
 {
     private readonly Lazy<ValueTask<IJSObjectReference>> _jsModule;
-    
+
     public WebAuthn(IJSRuntime jsRuntime)
     {
-        _jsModule = new (() => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Passwordless.BlazorWebAssembly/js/WebAuthn.js"));
+        _jsModule = new(() => jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Passwordless.BlazorWebAssembly/js/WebAuthn.js"));
     }
 
     private async Task<IJSObjectReference> GetJsModuleAsync() => await _jsModule.Value.ConfigureAwait(false);
@@ -24,7 +24,7 @@ public class WebAuthn : IWebAuthn
         var jsModule = await GetJsModuleAsync().ConfigureAwait(false);
         return await jsModule.InvokeAsync<bool>("isSupported");
     }
-    
+
 
     public async Task<AuthenticatorAttestationRawResponse> CreateCredentialAsync(CredentialCreateOptions options)
     {

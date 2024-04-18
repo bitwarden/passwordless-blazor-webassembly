@@ -6,13 +6,19 @@ namespace Passwordless.BlazorWebAssembly.Abstractions;
 public interface IPasswordlessClient : IDisposable
 {
     /// <summary>
+    /// Whether or not WebAuthn is supported by the web browser.
+    /// </summary>
+    /// <returns></returns>
+    Task<bool> IsSupportedAsync();
+
+    /// <summary>
     /// Registers a credential for a new user.
     /// </summary>
     /// <param name="token">The `register_` token returned by your backend.</param>
     /// <param name="nickname">The credential's nickname.</param>
     /// <returns></returns>
     Task<RegisterCompleteResponse> RegisterAsync(string token, string nickname);
-    
+
     /// <summary>
     /// Signs in a user.
     /// </summary>

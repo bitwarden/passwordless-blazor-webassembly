@@ -23,6 +23,11 @@ public sealed class PasswordlessClient : IPasswordlessClient
         _options = options;
     }
 
+    public async Task<bool> IsSupportedAsync()
+    {
+        return await _webAuthn.IsSupportedAsync();
+    }
+
     public async Task<RegisterCompleteResponse> RegisterAsync(string token, string nickname)
     {
         var beginRequest = new RegisterBeginRequest
