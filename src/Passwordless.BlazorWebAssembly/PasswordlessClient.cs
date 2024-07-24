@@ -22,7 +22,7 @@ public class PasswordlessClient : IAsyncDisposable, IPasswordlessClient
 
     private static async Task<IJSObjectReference> Initialize(IJSRuntime jsRuntime, string apiKey, string apiUrl)
     {
-        var module = await jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Passwordless.BlazorWebAssembly/lib/passwordless/passwordless-blazor.js");
+        var module = await jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Passwordless.BlazorWebAssembly/passwordless-blazor.js");
         var passwordlessClient = await module.InvokeAsync<IJSObjectReference>("init", apiKey, apiUrl);
         return passwordlessClient;
     }
