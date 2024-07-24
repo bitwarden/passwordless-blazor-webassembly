@@ -1,28 +1,40 @@
-
-using Passwordless.BlazorWebAssembly.Contracts;
-
 namespace Passwordless.BlazorWebAssembly.Abstractions;
 
-public interface IPasswordlessClient : IDisposable
+public interface IPasswordlessClient
 {
-    /// <summary>
-    /// Whether or not WebAuthn is supported by the web browser.
-    /// </summary>
-    /// <returns></returns>
-    Task<bool> IsSupportedAsync();
+    Task<bool> IsAutofillSupportedAsync();
 
+    Task<bool> IsBrowserSupportedAsync();
+    
+    Task<bool> IsPlatformSupportedAsync();
+    
     /// <summary>
-    /// Registers a credential for a new user.
+    /// Registers a user with the `register_` token returned by your backend.
     /// </summary>
     /// <param name="token">The `register_` token returned by your backend.</param>
-    /// <param name="nickname">The credential's nickname.</param>
-    /// <returns></returns>
-    Task<RegisterCompleteResponse> RegisterAsync(string token, string nickname);
-
+    ValueTask<string> RegisterAsync(string token);
+    
     /// <summary>
-    /// Signs in a user.
+    /// Sign in a user using the userid
     /// </summary>
-    /// <param name="alias">When using non-discoverable credentials, this is the user's alias.</param>
-    /// <returns>Returns the `verify_` token.</returns>
-    Task<LoginCompleteResponse> LoginAsync(string? alias);
+    /// <returns>a verify_token</returns>
+    ValueTask<string> SigninWithIdAsync(string userId);
+    
+    /// <summary>
+    /// Sign in a user using an alias
+    /// </summary>
+    /// <returns>a verify_token</returns>
+    ValueTask<string> SigninWithAliasAsync(string alias);
+    
+    /// <summary>
+    /// Sign in a user using autofill UI (a.k.a conditional) sign in
+    /// </summary>
+    /// <returns>a verify_token</returns>
+    ValueTask<string> SigninWithAutofillAsync();
+    
+    /// <summary>
+    /// ign in a user using discoverable credentials
+    /// </summary>
+    /// <returns>a verify_token</returns>
+    ValueTask<string> SigninWithDiscoverableAsync();
 }

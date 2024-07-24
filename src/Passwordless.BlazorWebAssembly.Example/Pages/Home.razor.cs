@@ -25,16 +25,16 @@ public partial class Home : ComponentBase
     {
         if (!IsSupported.HasValue)
         {
-            IsSupported = await WebAuthnClient.IsSupportedAsync();
+            IsSupported = await WebAuthnClient.IsBrowserSupportedAsync();
             StateHasChanged();
         }
     }
 
     private async Task OnSignInAsync()
     {
-        var token = await WebAuthnClient.LoginAsync(LoginViewModel.Alias!);
+        var token = await WebAuthnClient.SigninWithAliasAsync(LoginViewModel.Alias!);
 
-        var backendRequest = new SignInRequest(token.Token);
+        var backendRequest = new SignInRequest(token);
         var backendResponse = await BackendClient.SignInAsync(backendRequest);
     }
 
@@ -46,6 +46,6 @@ public partial class Home : ComponentBase
             return;
         }
         var registrationToken = await BackendClient.RegisterAsync(new RegisterRequest(RegisterViewModel.Username, RegisterViewModel.Alias));
-        var token = await WebAuthnClient.RegisterAsync(registrationToken.Token, RegisterViewModel.Alias!);
+        var token = await WebAuthnClient.RegisterAsync(registrationToken.Token);
     }
 }

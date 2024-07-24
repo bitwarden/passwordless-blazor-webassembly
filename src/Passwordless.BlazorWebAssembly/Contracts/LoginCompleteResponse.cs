@@ -1,7 +1,7 @@
 
 namespace Passwordless.BlazorWebAssembly.Contracts;
 
-public class LoginCompleteResponse
+public class LoginCompleteResponse : BaseErrorResponse
 {
     public string? Token { get; set; }
 }
