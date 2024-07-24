@@ -9,13 +9,29 @@
 
 <div class="container">
     <div class="row mb-2">
-        <div class="col">
+        <div class="col-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Is Supported?</h5>
-                    <p class="card-body">@(IsSupported.HasValue && IsSupported.Value ? "Yes" : "No")</p>
+                    <h5 class="card-title">Browser Supported?</h5>
+                    <p class="card-body">@(IsBrowserSupported.HasValue && IsBrowserSupported.Value ? "Yes" : "No")</p>
                 </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Platform Supported?</h5>
+                    <p class="card-body">@(IsPlatformSupported.HasValue && IsPlatformSupported.Value ? "Yes" : "No")</p>
                 </div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Autofill Supported?</h5>
+                    <p class="card-body">@(IsAutofillSupported.HasValue && IsAutofillSupported.Value ? "Yes" : "No")</p>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row g-4">
@@ -25,6 +41,10 @@
                     <h5 class="card-title mb-2">Register</h5>
                     <EditForm FormName="@RegisterFormName" Model="@RegisterViewModel" OnValidSubmit="OnRegistrationAsync">
                         <DataAnnotationsValidator/>
+                        <InputText class="form-control mb-2" DisplayName="First Name" @bind-Value="RegisterViewModel.FirstName" placeholder="John"/>
+                        <ValidationMessage class="mb-2 validation-message" For="@(() => RegisterViewModel.FirstName)"/>
+                        <InputText class="form-control mb-2" DisplayName="Last Name" @bind-Value="RegisterViewModel.LastName" placeholder="Doe"/>
+                        <ValidationMessage class="mb-2 validation-message" For="@(() => RegisterViewModel.LastName)"/>
                         <InputText class="form-control mb-2" DisplayName="Username" @bind-Value="RegisterViewModel.Username" placeholder="Username"/>
                         <ValidationMessage class="mb-2 validation-message" For="@(() => RegisterViewModel.Username)"/>
                         <InputText class="form-control mb-2" DisplayName="Alias" @bind-Value="RegisterViewModel.Alias" placeholder="Alias (optional)"/>
