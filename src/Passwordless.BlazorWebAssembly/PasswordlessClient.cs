@@ -1,78 +1,102 @@
-
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 using Passwordless.BlazorWebAssembly.Abstractions;
-using Passwordless.BlazorWebAssembly.Api;
 using Passwordless.BlazorWebAssembly.Configuration;
 using Passwordless.BlazorWebAssembly.Contracts;
+using Passwordless.BlazorWebAssembly.Exceptions;
 
 namespace Passwordless.BlazorWebAssembly;
 
-public sealed class PasswordlessClient : IPasswordlessClient
+public class PasswordlessClient : IAsyncDisposable, IPasswordlessClient
 {
-    private readonly IWebAuthn _webAuthn;
-    private readonly IPasswordlessApiClient _api;
-    private readonly IOptionsSnapshot<PasswordlessOptions> _options;
+    private readonly Lazy<Task<IJSObjectReference>> _passwordlessClientReferenceTask;
+    private readonly ILogger<PasswordlessClient> _logger;
 
-    public PasswordlessClient(
-        IWebAuthn webAuthn,
-        IPasswordlessApiClient api,
-        IOptionsSnapshot<PasswordlessOptions> options)
+    public PasswordlessClient(IJSRuntime jsRuntime, IOptions<PasswordlessOptions> passwordlessOptions, ILogger<PasswordlessClient> logger)
     {
-        _webAuthn = webAuthn;
-        _api = api;
-        _options = options;
+        _logger = logger;
+        var options = passwordlessOptions.Value;
+        _passwordlessClientReferenceTask = new Lazy<Task<IJSObjectReference>>(() => Initialize(jsRuntime, options.ApiKey, options.ApiUrl));
     }
 
-    public async Task<bool> IsSupportedAsync()
+    private static async Task<IJSObjectReference> Initialize(IJSRuntime jsRuntime, string apiKey, string apiUrl)
     {
-        return await _webAuthn.IsSupportedAsync();
+        var module = await jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Passwordless.BlazorWebAssembly/passwordless-blazor.js");
+        var passwordlessClient = await module.InvokeAsync<IJSObjectReference>("init", apiKey, apiUrl);
+        return passwordlessClient;
     }
 
-    public async Task<RegisterCompleteResponse> RegisterAsync(string token, string nickname)
+    public async ValueTask<string> SigninWithIdAsync(string userId)
     {
-        var beginRequest = new RegisterBeginRequest
-        {
-            Token = token,
-            Origin = _options.Value.Origin,
-            RPID = _options.Value.Rpid
-        };
-        var beginResponse = await _api.RegisterBeginAsync(beginRequest);
-        var authenticatorResponse = await _webAuthn.CreateCredentialAsync(beginResponse.Data);
-        var completeRequest = new RegisterCompleteRequest
-        {
-            Session = beginResponse.Session,
-            Response = authenticatorResponse,
-            Nickname = nickname,
-            Origin = _options.Value.Origin,
-            RPID = _options.Value.Rpid
-        };
-        var completeResponse = await _api.RegisterCompleteAsync(completeRequest);
-        return completeResponse;
+        return await InvokeCoreAsync<LoginCompleteResponse, string>("signinWithId", r => r.Token!, userId);
     }
 
-    public async Task<LoginCompleteResponse> LoginAsync(string? alias)
+    public async ValueTask<string> SigninWithAliasAsync(string alias)
     {
-        var beginRequest = new LoginBeginRequest
-        {
-            Alias = alias,
-            Origin = _options.Value.Origin,
-            RPID = _options.Value.Rpid
-        };
-        var beginResponse = await _api.SignInBeginAsync(beginRequest);
-        var authenticatorResponse = await _webAuthn.VerifyAsync(beginResponse.Data);
-        var completeRequest = new LoginCompleteRequest
-        {
-            Session = beginResponse.Session,
-            Response = authenticatorResponse,
-            Origin = _options.Value.Origin,
-            RPID = _options.Value.Rpid
-        };
-        var completeResponse = await _api.SignInCompleteAsync(completeRequest);
-        return completeResponse;
+        return await InvokeCoreAsync<LoginCompleteResponse, string>("signinWithAlias", r => r.Token!, alias);
     }
 
-    public void Dispose()
+    public async ValueTask<string> SigninWithAutofillAsync()
     {
-        GC.SuppressFinalize(this);
+        return await InvokeCoreAsync<LoginCompleteResponse, string>("signinWithAutofill", r => r.Token!);
+    }
+
+    public async ValueTask<string> SigninWithDiscoverableAsync()
+    {
+        return await InvokeCoreAsync<LoginCompleteResponse, string>("signinWithDiscoverable", r => r.Token!);
+    }
+
+    public async Task<bool> IsPlatformSupportedAsync()
+    {
+        var passwordlessClient = await _passwordlessClientReferenceTask.Value;
+        return await passwordlessClient.InvokeAsync<bool>("isPlatformSupported");
+    }
+    
+    public async Task<bool> IsBrowserSupportedAsync()
+    {
+        var passwordlessClient = await _passwordlessClientReferenceTask.Value;
+        return await passwordlessClient.InvokeAsync<bool>("isBrowserSupported");
+    }
+    
+    public async Task<bool> IsAutofillSupportedAsync()
+    {
+        var passwordlessClient = await _passwordlessClientReferenceTask.Value;
+        return await passwordlessClient.InvokeAsync<bool>("isAutofillSupported");
+    }
+
+    public async ValueTask<string> RegisterAsync(string token)
+    {
+        return await InvokeCoreAsync<RegisterCompleteResponse, string>("register", r => r.Token!, token);
+    }
+
+    private async ValueTask<TFinalReturn> InvokeCoreAsync<TReturn, TFinalReturn>(string identifier, Func<TReturn, TFinalReturn> returnCreator, params object?[]? args)
+        where TReturn : BaseErrorResponse
+    {
+        var passwordlessClient = await _passwordlessClientReferenceTask.Value;
+        try
+        {
+            var response = await passwordlessClient.InvokeAsync<TReturn>(identifier, args);
+            if (response.Error is not null)
+            {
+                throw new PasswordlessException(response.Error);
+            }
+
+            return returnCreator(response);
+        }
+        catch (JSException ex)
+        {
+            _logger.LogError(ex, "An error occured during {Identifier}, please report this error so we can make a better product.", identifier);
+            throw;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_passwordlessClientReferenceTask.IsValueCreated)
+        {
+            var module = await _passwordlessClientReferenceTask.Value;
+            await module.DisposeAsync();
+        }
     }
 }

@@ -19,22 +19,36 @@ public partial class Home : ComponentBase
     [SupplyParameterFromForm(FormName = RegisterFormName)]
     public RegisterViewModel RegisterViewModel { get; set; } = new();
 
-    public bool? IsSupported { get; private set; }
+    public bool? IsBrowserSupported { get; private set; }
+
+    public bool? IsPlatformSupported { get; private set; }
+
+    public bool? IsAutofillSupported { get; private set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!IsSupported.HasValue)
+        if (!IsBrowserSupported.HasValue)
         {
-            IsSupported = await WebAuthnClient.IsSupportedAsync();
+            IsBrowserSupported = await WebAuthnClient.IsBrowserSupportedAsync();
+            StateHasChanged();
+        }
+        if (!IsPlatformSupported.HasValue)
+        {
+            IsPlatformSupported = await WebAuthnClient.IsPlatformSupportedAsync();
+            StateHasChanged();
+        }
+        if (!IsAutofillSupported.HasValue)
+        {
+            IsAutofillSupported = await WebAuthnClient.IsAutofillSupportedAsync();
             StateHasChanged();
         }
     }
 
     private async Task OnSignInAsync()
     {
-        var token = await WebAuthnClient.LoginAsync(LoginViewModel.Alias!);
+        var token = await WebAuthnClient.SigninWithAliasAsync(LoginViewModel.Alias!);
 
-        var backendRequest = new SignInRequest(token.Token);
+        var backendRequest = new SignInRequest(token);
         var backendResponse = await BackendClient.SignInAsync(backendRequest);
     }
 
@@ -45,7 +59,8 @@ public partial class Home : ComponentBase
         {
             return;
         }
-        var registrationToken = await BackendClient.RegisterAsync(new RegisterRequest(RegisterViewModel.Username, RegisterViewModel.Alias));
-        var token = await WebAuthnClient.RegisterAsync(registrationToken.Token, RegisterViewModel.Alias!);
+        var request = new RegisterRequest(RegisterViewModel.Username, RegisterViewModel.Alias, RegisterViewModel.FirstName, RegisterViewModel.LastName);
+        var registrationToken = await BackendClient.RegisterAsync(request);
+        var token = await WebAuthnClient.RegisterAsync(registrationToken.Token);
     }
 }
