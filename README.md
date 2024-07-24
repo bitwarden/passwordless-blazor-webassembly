@@ -4,7 +4,7 @@
 
 ## Requirements
 
-- A Blazor WebAssembly application using .NET 8 or higher.
+- A Blazor WebAssembly application using .NET 6 or higher.
 
 ## Installation
 
