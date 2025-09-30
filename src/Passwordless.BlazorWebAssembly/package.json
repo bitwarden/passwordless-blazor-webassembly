@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "@passwordlessdev/passwordless-client": "1.2.2"
+    "@passwordlessdev/passwordless-client": "1.2.4"
   },
   "scripts": {
     "postinstall": "cp node_modules/@passwordlessdev/passwordless-client/dist/umd/passwordless.umd.min.js wwwroot/"
