@@ -22,7 +22,7 @@ jobs:
         persist-credentials: false
     
     - name: Setup .NET
-      uses: actions/setup-dotnet@3e891b0cb619bf60e2c25674b222b8940e2c1c25 # v4.1.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         dotnet-version: 8.0.x
         
